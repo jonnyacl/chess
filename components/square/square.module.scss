@@ -1,0 +1,22 @@
+.square {
+  &:hover {
+    -webkit-filter: brightness(70%);
+    opacity: 70%;
+    filter: brightness(70%);
+  }
+  position: relative;
+}
+
+.y {
+  font-size: smaller;
+  position: absolute;
+  top: 0;
+  padding: 2px;
+}
+
+.x {
+  font-size: smaller;
+  position: absolute;
+  bottom: 0;
+  padding: 2px;
+}
