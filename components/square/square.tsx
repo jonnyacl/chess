@@ -1,11 +1,11 @@
-import { ReactElement, useMemo } from "react";
+import { ReactElement, ReactNode, useMemo } from "react";
 import styles from "./square.module.scss";
 import { grid } from "../../grid";
 
 function Square(props: SquareProps): ReactElement {
   const colors = useMemo(() => {
     const { x, y } = props.grid;
-    let dark = "black";
+    let dark = "grey";
     let light = "white";
     if (props.squareTheme) {
       dark = props.squareTheme.dark;
@@ -45,13 +45,14 @@ function Square(props: SquareProps): ReactElement {
         color: colors.color,
       }}
       onClick={() => {
-        console.log(squareCoord, props.grid);
+        console.log(squareCoord, props.grid, "piece", props.piece);
       }}
     >
       {showY && <span className={styles.y}>{props.grid.y + 1}</span>}
       {showX && (
         <span className={styles.x}>{props.grid.xLetter.toLowerCase()}</span>
       )}
+      {props.piece && <span>{props.piece}</span>}
     </div>
   );
 }
@@ -59,8 +60,9 @@ function Square(props: SquareProps): ReactElement {
 interface SquareProps {
   grid: grid;
   style: any;
-  squareTheme: SquareTheme | undefined;
+  squareTheme?: SquareTheme;
   playerColour: string;
+  piece?: ReactNode;
 }
 
 interface SquareTheme {

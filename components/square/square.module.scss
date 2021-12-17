@@ -1,9 +1,4 @@
 .square {
-  &:hover {
-    -webkit-filter: brightness(70%);
-    opacity: 70%;
-    filter: brightness(70%);
-  }
   position: relative;
 }
 
