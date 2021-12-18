@@ -8,21 +8,20 @@ function Square(props: SquareProps): ReactElement {
     const { x, y } = props.grid;
     let dark = "grey";
     let light = "white";
+    let highlight = "black";
     if (props.squareTheme) {
       dark = props.squareTheme.dark;
       light = props.squareTheme.light;
+      highlight = props.squareTheme.highlight;
     }
     return x % 2 === 0
       ? y % 2 === 0
-        ? { background: dark, color: light }
-        : { background: light, color: dark }
+        ? { background: dark, color: light, highlight }
+        : { background: light, color: dark, highlight }
       : y % 2 === 0
-      ? { background: light, color: dark }
-      : { background: dark, color: light };
+      ? { background: light, color: dark, highlight }
+      : { background: dark, color: light, highlight };
   }, [props.squareTheme]);
-  const squareCoord: string = useMemo(() => {
-    return `${props.grid.xLetter}${props.grid.y + 1}`;
-  }, [props.grid]);
   const showX: boolean = useMemo(() => {
     if (props.playerColour === WHITE) {
       return props.grid.y === 0;
@@ -44,6 +43,7 @@ function Square(props: SquareProps): ReactElement {
         ...props.style,
         backgroundColor: colors.background,
         color: colors.color,
+        border: props.selected ? `5px solid ${colors.highlight}` : "none",
       }}
       onClick={() => {
         props.onClick(props.grid);
@@ -65,11 +65,13 @@ interface SquareProps {
   playerColour: symbol;
   piece?: ReactElement;
   onClick: Function;
+  selected?: boolean;
 }
 
-interface SquareTheme {
+export interface SquareTheme {
   dark: string;
   light: string;
+  highlight: string;
 }
 
 export default Square;

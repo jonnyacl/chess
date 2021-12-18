@@ -7,7 +7,7 @@ import Knight from "../pieces/knight/knight";
 import Pawn from "../pieces/pawn/pawn";
 import Queen from "../pieces/queen/queen";
 import Rook from "../pieces/rook/rook";
-import Square from "../square/square";
+import Square, { SquareTheme } from "../square/square";
 import styles from "./board.module.scss";
 
 const boardSize: number = 8;
@@ -61,9 +61,14 @@ const initPieces: any[][] = [
 ];
 
 function Board(): ReactElement {
-  const [theme, setTheme] = useState({ dark: "grey", light: "white" });
+  const [theme, setTheme] = useState<SquareTheme>({
+    dark: "grey",
+    light: "white",
+    highlight: "black",
+  });
   const [playerColour, setPlayerColour] = useState<symbol>(WHITE);
   const [turn, setTurn] = useState<symbol>(WHITE);
+  const [winner, setWinner] = useState<symbol | null>(null);
   const [boardRows, setBoardRows] = useState<ReactElement[]>([]);
   const [selectedPieceSquare, setSelectedPieceSquare] = useState<grid | null>(
     null
@@ -87,7 +92,10 @@ function Board(): ReactElement {
   }, [playerColour]);
 
   const pieceClick = (grd: grid) => {
-    if (selectedPieceSquare) {
+    if (
+      selectedPieceSquare &&
+      (selectedPieceSquare.x !== grd.x || selectedPieceSquare.y !== grd.y)
+    ) {
       // 1. get piece from prev selected square
       const selectpiecedPiece =
         pieceLayout[selectedPieceSquare.y][selectedPieceSquare.x];
@@ -98,7 +106,7 @@ function Board(): ReactElement {
         "to",
         `${grd.xLetter}${grd.y + 1}`
       );
-      // 2. check if prev selected piece can move to new grd position
+      // 2. check if prev selected piece can move to new grd position: i.e. chess rules here!!
       // 3. update piece layout
       const newPieceLayout = [...pieceLayout];
       newPieceLayout[selectedPieceSquare.y][selectedPieceSquare.x] = null;
@@ -130,7 +138,6 @@ function Board(): ReactElement {
         row.push(
           <Square
             style={{
-              outline: "1px solid black",
               width: squareWidth,
               height: squareWidth,
               marginTop: "1px",
@@ -146,6 +153,10 @@ function Board(): ReactElement {
             playerColour={playerColour}
             piece={pieceLayout[yCoord][xCoord] || null}
             onClick={pieceClick}
+            selected={
+              xCoord === selectedPieceSquare?.x &&
+              yCoord === selectedPieceSquare.y
+            }
           />
         );
       }
