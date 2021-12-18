@@ -1,4 +1,5 @@
 import { ReactElement, useCallback, useEffect, useState } from "react";
+import { isLegalMove } from "../../chess";
 import { BLACK, WHITE } from "../../colours";
 import { grid } from "../../grid";
 import Bishop from "../pieces/bishop/bishop";
@@ -13,7 +14,7 @@ import styles from "./board.module.scss";
 const boardSize: number = 8;
 const squareWidth: number = 60;
 const gridLetters = ["A", "B", "C", "D", "E", "F", "G", "H"];
-const initPieces: any[][] = [
+const pieceLayout: any[][] = [
   [
     <Rook colour={WHITE} />,
     <Knight colour={WHITE} />,
@@ -73,7 +74,6 @@ function Board(): ReactElement {
   const [selectedPieceSquare, setSelectedPieceSquare] = useState<grid | null>(
     null
   );
-  const [pieceLayout, setPieceLayout] = useState(initPieces);
 
   const toggleTurn = useCallback(() => {
     if (turn === WHITE) {
@@ -99,21 +99,15 @@ function Board(): ReactElement {
       // 1. get piece from prev selected square
       const selectpiecedPiece =
         pieceLayout[selectedPieceSquare.y][selectedPieceSquare.x];
-      console.log(
-        "move attempted",
-        selectpiecedPiece.type.name,
-        `${selectedPieceSquare.xLetter}${selectedPieceSquare.y + 1}`,
-        "to",
-        `${grd.xLetter}${grd.y + 1}`
-      );
       // 2. check if prev selected piece can move to new grd position: i.e. chess rules here!!
       // 3. update piece layout
-      const newPieceLayout = [...pieceLayout];
-      newPieceLayout[selectedPieceSquare.y][selectedPieceSquare.x] = null;
-      newPieceLayout[grd.y][grd.x] = selectpiecedPiece;
-      setSelectedPieceSquare(null);
-      // 4. toggle colour turn
-      toggleTurn();
+      if (isLegalMove(pieceLayout, selectedPieceSquare, grd)) {
+        pieceLayout[selectedPieceSquare.y][selectedPieceSquare.x] = null;
+        pieceLayout[grd.y][grd.x] = selectpiecedPiece;
+        setSelectedPieceSquare(null);
+        // 4. toggle colour turn
+        toggleTurn();
+      }
     } else {
       const selectedPiece = pieceLayout[grd.y][grd.x];
       if (selectedPiece && selectedPiece.props.colour === turn) {
@@ -167,7 +161,7 @@ function Board(): ReactElement {
       );
     }
     setBoardRows(setUpRows);
-  }, [theme, playerColour, pieceLayout, selectedPieceSquare]);
+  }, [theme, playerColour, selectedPieceSquare]);
   return (
     <div className={styles.board}>
       <div className={styles.toggle}>
