@@ -1,6 +1,7 @@
-import { ReactElement, ReactNode, useMemo } from "react";
+import { ReactElement, useMemo } from "react";
 import styles from "./square.module.scss";
 import { grid } from "../../grid";
+import { WHITE } from "../../colours";
 
 function Square(props: SquareProps): ReactElement {
   const colors = useMemo(() => {
@@ -23,13 +24,13 @@ function Square(props: SquareProps): ReactElement {
     return `${props.grid.xLetter}${props.grid.y + 1}`;
   }, [props.grid]);
   const showX: boolean = useMemo(() => {
-    if (props.playerColour === "white") {
+    if (props.playerColour === WHITE) {
       return props.grid.y === 0;
     }
     return props.grid.y === 7;
   }, [props.playerColour]);
   const showY: boolean = useMemo(() => {
-    if (props.playerColour === "white") {
+    if (props.playerColour === WHITE) {
       return props.grid.x === 0;
     }
     return props.grid.x === 7;
@@ -45,14 +46,14 @@ function Square(props: SquareProps): ReactElement {
         color: colors.color,
       }}
       onClick={() => {
-        console.log(squareCoord, props.grid, "piece", props.piece);
+        props.onClick(props.grid);
       }}
     >
       {showY && <span className={styles.y}>{props.grid.y + 1}</span>}
       {showX && (
         <span className={styles.x}>{props.grid.xLetter.toLowerCase()}</span>
       )}
-      {props.piece && <span>{props.piece}</span>}
+      {props.piece}
     </div>
   );
 }
@@ -61,8 +62,9 @@ interface SquareProps {
   grid: grid;
   style: any;
   squareTheme?: SquareTheme;
-  playerColour: string;
-  piece?: ReactNode;
+  playerColour: symbol;
+  piece?: ReactElement;
+  onClick: Function;
 }
 
 interface SquareTheme {

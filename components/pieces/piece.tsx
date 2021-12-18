@@ -2,7 +2,7 @@ import { ReactElement } from "react";
 import { PieceProps } from ".";
 import pieceStyles from "./piece.module.scss";
 
-function Piece(props: PieceProps): ReactElement {
+function Piece(props: PieceProps): ReactElement<PieceProps> {
   if (props.colour.description) {
     return (
       <div className={pieceStyles.piece}>
