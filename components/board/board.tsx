@@ -1,5 +1,5 @@
 import { ReactElement, useCallback, useEffect, useState } from "react";
-import { isLegalMove } from "../../chess";
+import { boardSize, gridLetters, isLegalMove } from "../../chess";
 import { BLACK, WHITE } from "../../colours";
 import { grid } from "../../grid";
 import Bishop from "../pieces/bishop/bishop";
@@ -11,9 +11,7 @@ import Rook from "../pieces/rook/rook";
 import Square, { SquareTheme } from "../square/square";
 import styles from "./board.module.scss";
 
-const boardSize: number = 8;
 const squareWidth: number = 60;
-const gridLetters = ["A", "B", "C", "D", "E", "F", "G", "H"];
 const pieceLayout: any[][] = [
   [
     <Rook colour={WHITE} />,

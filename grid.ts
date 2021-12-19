@@ -1,7 +1,7 @@
 interface grid {
   x: number;
   y: number;
-  xLetter: string;
+  xLetter?: string;
 }
 
 enum XGRID {
