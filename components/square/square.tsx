@@ -1,7 +1,14 @@
-import { ReactElement, useMemo } from "react";
+import { ReactElement, useCallback, useEffect, useMemo } from "react";
 import styles from "./square.module.scss";
 import { grid } from "../../grid";
 import { WHITE } from "../../colours";
+import { ChessPiece } from "../../chess";
+import Pawn from "../pieces/pawn/pawn";
+import Knight from "../pieces/knight/knight";
+import Bishop from "../pieces/bishop/bishop";
+import Rook from "../pieces/rook/rook";
+import Queen from "../pieces/queen/queen";
+import King from "../pieces/king/king";
 
 function Square(props: SquareProps): ReactElement {
   const colors = useMemo(() => {
@@ -35,6 +42,30 @@ function Square(props: SquareProps): ReactElement {
     return props.grid.x === 7;
   }, [props.playerColour]);
 
+  const renderPiece = useCallback(() => {
+    switch (props.piece?.name.toLowerCase()) {
+      case "pawn":
+        return <Pawn colour={props.piece.colour} />;
+      case "knight":
+        return <Knight colour={props.piece.colour} />;
+      case "bishop":
+        return <Bishop colour={props.piece.colour} />;
+      case "rook":
+        return <Rook colour={props.piece.colour} />;
+      case "queen":
+        return <Queen colour={props.piece.colour} />;
+      case "king":
+        return <King colour={props.piece.colour} />;
+    }
+  }, [props.piece]);
+
+  useEffect(() => {
+    if (props.piece) {
+      // on position update, rerender causes this useEffect to trigger, allowing us to update the piece object's board position
+      props.piece.setPosition(props.grid);
+    }
+  }, [props.piece]);
+
   return (
     <div
       className={styles.square}
@@ -46,14 +77,15 @@ function Square(props: SquareProps): ReactElement {
         border: props.selected ? `5px solid ${colors.highlight}` : "none",
       }}
       onClick={() => {
+        console.log("square clicked", props.grid);
         props.onClick(props.grid);
       }}
     >
       {showY && <span className={styles.y}>{props.grid.y + 1}</span>}
       {showX && (
-        <span className={styles.x}>{props.grid.xLetter.toLowerCase()}</span>
+        <span className={styles.x}>{props.grid.xLetter?.toLowerCase()}</span>
       )}
-      {props.piece}
+      {renderPiece()}
     </div>
   );
 }
@@ -63,7 +95,7 @@ interface SquareProps {
   style: any;
   squareTheme?: SquareTheme;
   playerColour: symbol;
-  piece?: ReactElement;
+  piece?: ChessPiece;
   onClick: Function;
   selected?: boolean;
 }

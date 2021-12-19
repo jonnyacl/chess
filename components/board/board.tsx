@@ -1,61 +1,56 @@
 import { ReactElement, useCallback, useEffect, useState } from "react";
-import { boardSize, gridLetters, isLegalMove } from "../../chess";
+import { boardSize, ChessPiece, gridLetters } from "../../chess";
 import { BLACK, WHITE } from "../../colours";
 import { grid } from "../../grid";
-import Bishop from "../pieces/bishop/bishop";
-import King from "../pieces/king/king";
-import Knight from "../pieces/knight/knight";
-import Pawn from "../pieces/pawn/pawn";
-import Queen from "../pieces/queen/queen";
-import Rook from "../pieces/rook/rook";
+import { AllPieces } from "../../pieces";
 import Square, { SquareTheme } from "../square/square";
 import styles from "./board.module.scss";
 
 const squareWidth: number = 60;
-const pieceLayout: any[][] = [
+const pieceLayout: Array<Array<ChessPiece | null>> = [
   [
-    <Rook colour={WHITE} />,
-    <Knight colour={WHITE} />,
-    <Bishop colour={WHITE} />,
-    <Queen colour={WHITE} />,
-    <King colour={WHITE} />,
-    <Bishop colour={WHITE} />,
-    <Knight colour={WHITE} />,
-    <Rook colour={WHITE} />,
+    AllPieces["WHITEROOK"],
+    AllPieces["WHITEKNIGHT"],
+    AllPieces["WHITEBISHOP"],
+    AllPieces["WHITEQUEEN"],
+    AllPieces["WHITEKING"],
+    AllPieces["WHITEBISHOP"],
+    AllPieces["WHITEKNIGHT"],
+    AllPieces["WHITEROOK"],
   ],
   [
-    <Pawn colour={WHITE} />,
-    <Pawn colour={WHITE} />,
-    <Pawn colour={WHITE} />,
-    <Pawn colour={WHITE} />,
-    <Pawn colour={WHITE} />,
-    <Pawn colour={WHITE} />,
-    <Pawn colour={WHITE} />,
-    <Pawn colour={WHITE} />,
+    AllPieces["WHITEPAWN"],
+    AllPieces["WHITEPAWN"],
+    AllPieces["WHITEPAWN"],
+    AllPieces["WHITEPAWN"],
+    AllPieces["WHITEPAWN"],
+    AllPieces["WHITEPAWN"],
+    AllPieces["WHITEPAWN"],
+    AllPieces["WHITEPAWN"],
   ],
   [null, null, null, null, null, null, null, null],
   [null, null, null, null, null, null, null, null],
   [null, null, null, null, null, null, null, null],
   [null, null, null, null, null, null, null, null],
   [
-    <Pawn colour={BLACK} />,
-    <Pawn colour={BLACK} />,
-    <Pawn colour={BLACK} />,
-    <Pawn colour={BLACK} />,
-    <Pawn colour={BLACK} />,
-    <Pawn colour={BLACK} />,
-    <Pawn colour={BLACK} />,
-    <Pawn colour={BLACK} />,
+    AllPieces["BLACKPAWN"],
+    AllPieces["BLACKPAWN"],
+    AllPieces["BLACKPAWN"],
+    AllPieces["BLACKPAWN"],
+    AllPieces["BLACKPAWN"],
+    AllPieces["BLACKPAWN"],
+    AllPieces["BLACKPAWN"],
+    AllPieces["BLACKPAWN"],
   ],
   [
-    <Rook colour={BLACK} />,
-    <Knight colour={BLACK} />,
-    <Bishop colour={BLACK} />,
-    <Queen colour={BLACK} />,
-    <King colour={BLACK} />,
-    <Bishop colour={BLACK} />,
-    <Knight colour={BLACK} />,
-    <Rook colour={BLACK} />,
+    AllPieces["BLACKROOK"],
+    AllPieces["BLACKKNIGHT"],
+    AllPieces["BLACKBISHOP"],
+    AllPieces["BLACKQUEEN"],
+    AllPieces["BLACKKING"],
+    AllPieces["BLACKBISHOP"],
+    AllPieces["BLACKKNIGHT"],
+    AllPieces["BLACKROOK"],
   ],
 ];
 
@@ -95,25 +90,31 @@ function Board(): ReactElement {
       (selectedPieceSquare.x !== grd.x || selectedPieceSquare.y !== grd.y)
     ) {
       // 1. get piece from prev selected square
-      const selectpiecedPiece =
+      const selectedPiece: ChessPiece | null =
         pieceLayout[selectedPieceSquare.y][selectedPieceSquare.x];
-      // 2. check if prev selected piece can move to new grd position: i.e. chess rules here!!
-      // 3. update piece layout
-      if (isLegalMove(pieceLayout, selectedPieceSquare, grd)) {
+      if (selectedPiece === null) {
+        // no piece to move, should not happen
+        console.warn("No piece was selected on previous click");
+        return;
+      }
+      // 2. check if prev selected piece can move to new grd position
+      if (selectedPiece.canMove(pieceLayout, grd)) {
+        // 3. update piece layout
         pieceLayout[selectedPieceSquare.y][selectedPieceSquare.x] = null;
-        pieceLayout[grd.y][grd.x] = selectpiecedPiece;
+        pieceLayout[grd.y][grd.x] = selectedPiece;
         setSelectedPieceSquare(null);
         // 4. toggle colour turn
         toggleTurn();
       }
     } else {
       const selectedPiece = pieceLayout[grd.y][grd.x];
-      if (selectedPiece && selectedPiece.props.colour === turn) {
+      if (selectedPiece && selectedPiece.colour === turn) {
         // clicked on valid piece square, mark it as selected
         console.log(
           "selected piece",
-          selectedPiece.type.name,
-          `${grd.xLetter}${grd.y + 1}`
+          selectedPiece.name,
+          `${grd.xLetter}${grd.y + 1}`,
+          selectedPiece.position
         );
         setSelectedPieceSquare(grd);
       }
@@ -143,7 +144,7 @@ function Board(): ReactElement {
             squareTheme={theme}
             key={`${xCoord}${yCoord}`}
             playerColour={playerColour}
-            piece={pieceLayout[yCoord][xCoord] || null}
+            piece={pieceLayout[yCoord][xCoord] || undefined}
             onClick={pieceClick}
             selected={
               xCoord === selectedPieceSquare?.x &&
@@ -154,7 +155,7 @@ function Board(): ReactElement {
       }
       setUpRows.push(
         <div className={styles.boardRow} key={`row${i}`}>
-          {row.map((r) => r)}
+          {row.map((square) => square)}
         </div>
       );
     }
@@ -174,7 +175,7 @@ function Board(): ReactElement {
         </label>
         <span className={styles.toggleColour}>Black</span>
       </div>
-      {boardRows.map((square) => square)}
+      {boardRows.map((row) => row)}
     </div>
   );
 }
