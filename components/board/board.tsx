@@ -1,67 +1,78 @@
-import { ReactElement, useCallback, useEffect, useState } from "react";
-import { boardSize, ChessPiece, gridLetters } from "../../chess";
-import { BLACK, WHITE } from "../../colours";
-import { grid } from "../../grid";
-import { AllPieces } from "../../pieces";
-import Square, { SquareTheme } from "../square/square";
-import styles from "./board.module.scss";
+import { ReactElement, useCallback, useEffect, useState } from 'react';
+import { boardSize, ChessPiece, gridLetters } from '../../chess';
+import { BLACK, WHITE } from '../../colours';
+import { grid } from '../../grid';
+import { AllPieces } from '../../pieces';
+import Piece from '../pieces/piece';
+import Square, { SquareTheme } from '../square/square';
+import styles from './board.module.scss';
 
 const squareWidth: number = 60;
 const pieceLayout: Array<Array<ChessPiece | null>> = [
   [
-    AllPieces["WHITEROOK"],
-    AllPieces["WHITEKNIGHT"],
-    AllPieces["WHITEBISHOP"],
-    AllPieces["WHITEQUEEN"],
-    AllPieces["WHITEKING"],
-    AllPieces["WHITEBISHOP"],
-    AllPieces["WHITEKNIGHT"],
-    AllPieces["WHITEROOK"],
+    AllPieces['WHITEROOK'],
+    AllPieces['WHITEKNIGHT'],
+    AllPieces['WHITEBISHOP'],
+    AllPieces['WHITEQUEEN'],
+    AllPieces['WHITEKING'],
+    AllPieces['WHITEBISHOP'],
+    AllPieces['WHITEKNIGHT'],
+    AllPieces['WHITEROOK'],
   ],
   [
-    AllPieces["WHITEPAWN"],
-    AllPieces["WHITEPAWN"],
-    AllPieces["WHITEPAWN"],
-    AllPieces["WHITEPAWN"],
-    AllPieces["WHITEPAWN"],
-    AllPieces["WHITEPAWN"],
-    AllPieces["WHITEPAWN"],
-    AllPieces["WHITEPAWN"],
+    AllPieces['WHITEPAWN'],
+    AllPieces['WHITEPAWN'],
+    AllPieces['WHITEPAWN'],
+    AllPieces['WHITEPAWN'],
+    AllPieces['WHITEPAWN'],
+    AllPieces['WHITEPAWN'],
+    AllPieces['WHITEPAWN'],
+    AllPieces['WHITEPAWN'],
   ],
   [null, null, null, null, null, null, null, null],
   [null, null, null, null, null, null, null, null],
   [null, null, null, null, null, null, null, null],
   [null, null, null, null, null, null, null, null],
   [
-    AllPieces["BLACKPAWN"],
-    AllPieces["BLACKPAWN"],
-    AllPieces["BLACKPAWN"],
-    AllPieces["BLACKPAWN"],
-    AllPieces["BLACKPAWN"],
-    AllPieces["BLACKPAWN"],
-    AllPieces["BLACKPAWN"],
-    AllPieces["BLACKPAWN"],
+    AllPieces['BLACKPAWN'],
+    AllPieces['BLACKPAWN'],
+    AllPieces['BLACKPAWN'],
+    AllPieces['BLACKPAWN'],
+    AllPieces['BLACKPAWN'],
+    AllPieces['BLACKPAWN'],
+    AllPieces['BLACKPAWN'],
+    AllPieces['BLACKPAWN'],
   ],
   [
-    AllPieces["BLACKROOK"],
-    AllPieces["BLACKKNIGHT"],
-    AllPieces["BLACKBISHOP"],
-    AllPieces["BLACKQUEEN"],
-    AllPieces["BLACKKING"],
-    AllPieces["BLACKBISHOP"],
-    AllPieces["BLACKKNIGHT"],
-    AllPieces["BLACKROOK"],
+    AllPieces['BLACKROOK'],
+    AllPieces['BLACKKNIGHT'],
+    AllPieces['BLACKBISHOP'],
+    AllPieces['BLACKQUEEN'],
+    AllPieces['BLACKKING'],
+    AllPieces['BLACKBISHOP'],
+    AllPieces['BLACKKNIGHT'],
+    AllPieces['BLACKROOK'],
   ],
 ];
 
-function Board(): ReactElement {
-  const [theme, setTheme] = useState<SquareTheme>({
-    dark: "grey",
-    light: "white",
-    highlight: "black",
-  });
-  const [playerColour, setPlayerColour] = useState<symbol>(WHITE);
+function Board({
+  playerColour = WHITE,
+  theme = {
+    dark: 'grey',
+    light: 'white',
+    highlight: 'black',
+  },
+}: {
+  playerColour: symbol;
+  theme: SquareTheme;
+}): ReactElement {
   const [turn, setTurn] = useState<symbol>(WHITE);
+  const [capturedBlackPieces, setCapturedBlackPieces] = useState<ChessPiece[]>(
+    []
+  );
+  const [capturedWhitePieces, setCapturedWhitePieces] = useState<ChessPiece[]>(
+    []
+  );
   const [winner, setWinner] = useState<symbol | null>(null);
   const [boardRows, setBoardRows] = useState<ReactElement[]>([]);
   const [selectedPieceSquare, setSelectedPieceSquare] = useState<grid | null>(
@@ -76,46 +87,52 @@ function Board(): ReactElement {
     }
   }, [turn]);
 
-  const toggleColour = useCallback(() => {
-    if (playerColour === WHITE) {
-      setPlayerColour(BLACK);
-    } else {
-      setPlayerColour(WHITE);
-    }
-  }, [playerColour]);
-
-  const pieceClick = (grd: grid) => {
+  const onSquareClick = (grd: grid) => {
     if (
       selectedPieceSquare &&
       (selectedPieceSquare.x !== grd.x || selectedPieceSquare.y !== grd.y)
     ) {
-      // 1. get piece from prev selected square
+      // 1. get piece to move
       const selectedPiece: ChessPiece | null =
         pieceLayout[selectedPieceSquare.y][selectedPieceSquare.x];
       if (selectedPiece === null) {
         // no piece to move, should not happen
-        console.warn("No piece was selected on previous click");
+        console.error('No selected piece');
         return;
       }
-      // 2. check if prev selected piece can move to new grd position
-      if (selectedPiece.canMove(pieceLayout, grd)) {
+      // 2. check ifpiece to move can move to new grd position
+      if (selectedPiece.canMove(pieceLayout, grd, turn)) {
         // 3. update piece layout
         pieceLayout[selectedPieceSquare.y][selectedPieceSquare.x] = null;
+        if (pieceLayout[grd.y][grd.x]) {
+          console.log('Piece captured', pieceLayout[grd.y][grd.x]);
+          const capturePiece = pieceLayout[grd.y][grd.x] as ChessPiece;
+          if (capturePiece.colour === WHITE) {
+            setCapturedWhitePieces([
+              ...capturedWhitePieces,
+              pieceLayout[grd.y][grd.x] as ChessPiece,
+            ]);
+          } else {
+            setCapturedBlackPieces([
+              ...capturedBlackPieces,
+              pieceLayout[grd.y][grd.x] as ChessPiece,
+            ]);
+          }
+        }
         pieceLayout[grd.y][grd.x] = selectedPiece;
         setSelectedPieceSquare(null);
-        // 4. toggle colour turn
         toggleTurn();
       }
     } else {
       const selectedPiece = pieceLayout[grd.y][grd.x];
       if (selectedPiece && selectedPiece.colour === turn) {
         // clicked on valid piece square, mark it as selected
-        console.log(
-          "selected piece",
-          selectedPiece.name,
-          `${grd.xLetter}${grd.y + 1}`,
-          selectedPiece.position
-        );
+        // console.log(
+        //   "selected piece",
+        //   selectedPiece.name,
+        //   `${grd.xLetter}${grd.y + 1}`,
+        //   selectedPiece.position
+        // );
         setSelectedPieceSquare(grd);
       }
     }
@@ -133,8 +150,8 @@ function Board(): ReactElement {
             style={{
               width: squareWidth,
               height: squareWidth,
-              marginTop: "1px",
-              marginLeft: "1px",
+              marginTop: '1px',
+              marginLeft: '1px',
             }}
             grid={{
               x: xCoord,
@@ -145,7 +162,9 @@ function Board(): ReactElement {
             key={`${xCoord}${yCoord}`}
             playerColour={playerColour}
             piece={pieceLayout[yCoord][xCoord] || undefined}
-            onClick={pieceClick}
+            onClick={onSquareClick}
+            onMove={onSquareClick}
+            onSelectPiece={setSelectedPieceSquare}
             selected={
               xCoord === selectedPieceSquare?.x &&
               yCoord === selectedPieceSquare.y
@@ -160,23 +179,24 @@ function Board(): ReactElement {
       );
     }
     setBoardRows(setUpRows);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [theme, playerColour, selectedPieceSquare]);
   return (
-    <div className={styles.board}>
-      <div className={styles.toggle}>
-        <span className={styles.toggleColour}>White</span>
-        <label className={styles.switch}>
-          <input
-            type="checkbox"
-            checked={playerColour === BLACK}
-            onChange={toggleColour}
-          />
-          <span className={styles.slider}></span>
-        </label>
-        <span className={styles.toggleColour}>Black</span>
+    <>
+      <div className={styles.board}>{boardRows.map((row) => row)}</div>
+      <div>
+        <div className={styles.capturedPieces}>
+          {capturedWhitePieces.map((p, i) => {
+            return p.renderPiece();
+          })}
+        </div>
+        <div className={styles.capturedPieces}>
+          {capturedBlackPieces.map((p, i) => {
+            return p.renderPiece();
+          })}
+        </div>
       </div>
-      {boardRows.map((row) => row)}
-    </div>
+    </>
   );
 }
 
