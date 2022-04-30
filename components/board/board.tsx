@@ -78,11 +78,16 @@ function Board({
   const [selectedPieceSquare, setSelectedPieceSquare] = useState<grid | null>(
     null
   );
+  useEffect(() => {
+    console.log(`white's move`);
+  }, []);
 
   const toggleTurn = useCallback(() => {
     if (turn === WHITE) {
+      console.log(`black's move`);
       setTurn(BLACK);
     } else if (turn === BLACK) {
+      console.log(`white's move`);
       setTurn(WHITE);
     }
   }, [turn]);
@@ -187,12 +192,12 @@ function Board({
       <div>
         <div className={styles.capturedPieces}>
           {capturedWhitePieces.map((p, i) => {
-            return p.renderPiece();
+            return <div key={`white-${i}`}>{p.renderPiece()}</div>;
           })}
         </div>
         <div className={styles.capturedPieces}>
           {capturedBlackPieces.map((p, i) => {
-            return p.renderPiece();
+            return <div key={`black-${i}`}>{p.renderPiece()}</div>;
           })}
         </div>
       </div>

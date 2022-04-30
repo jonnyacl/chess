@@ -7,7 +7,7 @@ import {
   Knight as Knightpiece,
   Queen as QueenPiece,
 } from './components/pieces/';
-import React, { ReactElement } from 'react';
+import React from 'react';
 
 const allSquares: grid[] = [];
 const gridLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
@@ -26,8 +26,6 @@ export abstract class ChessPiece {
   colour: symbol;
   position: grid;
   checkInit(turn: symbol) {
-    console.log('piece colour', this.colour);
-    console.log(`${turn.description}'s move`);
     if (turn.description !== this.colour.description) {
       console.error(`Not ${this.colour.description}'s move!`);
       return false;

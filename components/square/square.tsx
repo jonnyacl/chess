@@ -132,6 +132,7 @@ function Square(props: SquareProps): ReactElement {
       }}
       onDragOver={(event) => {
         event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
       }}
     >
       {showY && <span className={styles.y}>{props.grid.y + 1}</span>}
